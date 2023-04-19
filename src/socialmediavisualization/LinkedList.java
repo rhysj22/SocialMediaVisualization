@@ -1,148 +1,406 @@
-package socialmediavisualization;
+package prj5;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
- * Singly linked list using generic input
+ * This provides implementation for some of the LList methods.
+ *
  * @author Group 116
- * @version 2023.4.13
- * @param <T> Generic type
+ * @version 2023.04.19
+ * @param <T>
+ *            The type of object the class will store
  */
-public class LinkedList<T> implements Iterator<T> {
-    private int size;
-    private Node head;
-    
+public class LinkedList<T> {
+
     /**
-     * Gets if there are no elements in the list
-     * @return is empty
+     * This represents a node in a doubly linked list. This node stores data, a
+     * pointer to the node before it in the list, and a pointer to the node
+     * after it in the list
+     *
+     * @param <T>
+     *            This is the type of object that this class will store
+     * @author Group 116
+     * @version 2023.04.19
+     */
+    private static class Node<T> {
+        private Node<T> next;
+        private Node<T> previous;
+        private T data;
+
+        /**
+         * Creates a new node with the given data
+         *
+         * @param d
+         *            the data to put inside the node
+         */
+        public Node(T d) {
+            data = d;
+        }
+
+
+        /**
+         * Sets the node after this node
+         *
+         * @param n
+         *            the node after this one
+         */
+        public void setNext(Node<T> n) {
+            next = n;
+        }
+
+
+        /**
+         * Sets the node before this one
+         *
+         * @param n
+         *            the node before this one
+         */
+        public void setPrevious(Node<T> n) {
+            previous = n;
+        }
+
+
+        /**
+         * Gets the next node
+         *
+         * @return the next node
+         */
+        public Node<T> next() {
+            return next;
+        }
+
+
+        /**
+         * Gets the node before this one
+         *
+         * @return the node before this one
+         */
+        public Node<T> previous() {
+            return previous;
+        }
+
+
+        /**
+         * Gets the data in the node
+         *
+         * @return the data in the node
+         */
+        public T getData() {
+            return data;
+        }
+    }
+
+
+    /**
+     * Iterator class. Should be able to iterate
+     * trough the Specified DLList Class
+     */
+    private class DLListIterator<A> implements Iterator<T> {
+        private Node<T> next;
+        private boolean calledNext;
+
+        /**
+         * Creates a new DLListIterator
+         */
+        public DLListIterator() {
+            next = head;
+            calledNext = false;
+
+        }
+
+
+        /**
+         * checks if there are more
+         * elements in the list
+         * 
+         * @return true if there are more
+         *         elements in the list
+         * @Override
+         */
+        public boolean hasNext() {
+            return next.next().getData() != null;
+        }
+
+
+        /**
+         * Returns the next value in the
+         * list
+         * 
+         * @return the next value
+         * @throws NoSuchElementException
+         *             if there are no nodes left in the list
+         * 
+         */
+        public T next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException("There are no nodes left");
+            }
+            T nextValue = next.next().getData();
+            calledNext = true;
+            next = next.next();
+            return nextValue;
+        }
+
+    }
+
+    /**
+     * How many nodes are in the list
+     */
+    private int size;
+
+    /**
+     * The first node in the list. THIS IS A SENTINEL NODE AND AS SUCH DOES NOT
+     * HOLD ANY DATA. REFER TO init()
+     */
+    private Node<T> head;
+
+    /**
+     * The last node in the list. THIS IS A SENTINEL NODE AND AS SUCH DOES NOT
+     * HOLD ANY DATA. REFER TO init()
+     */
+    private Node<T> tail;
+
+    /**
+     * Create a new DLList object.
+     */
+    public LinkedList() {
+        init();
+    }
+
+
+    /**
+     * Iterator method creates
+     * Iterator object
+     * 
+     * @return new iterator
+     */
+    public Iterator<T> iterator() {
+        return new DLListIterator<T>();
+    }
+
+
+    /**
+     * Initializes the object to have the head and tail nodes
+     */
+    private void init() {
+        head = new LinkedList.Node<T>(null);
+        tail = new LinkedList.Node<T>(null);
+        head.setNext(tail);
+        tail.setPrevious(head);
+        size = 0;
+    }
+
+
+    /**
+     * Checks if the array is empty
+     *
+     * @return true if the array is empty
      */
     public boolean isEmpty() {
         return size == 0;
     }
-    
-    /**
-     * Removes all elements from the list
-     */
-    public void clear() {
-        head = new Node(null, null);
-    }
-    
-    /**
-     * Gets element from the front of the list
-     * @return Front element
-     */
-    public T get() {
-        return head.data;
-    }
-    
+
+
     /**
      * Gets the number of elements in the list
-     * @return Size 
+     *
+     * @return the number of elements
      */
     public int size() {
         return size;
     }
 
-    /**
-     * Searches the list for a given element
-     * @param element Element to search for
-     * @return If contained in the list
-     */
-    public boolean contains(T element) {
-        Node currentNode = head;
-        while (currentNode.next != null) {
-            if (currentNode.equals(element)) {
-                return true;
-            }
-            currentNode = currentNode.next;
-        }
-        return false;
-    }
 
     /**
-     * Adds an element to the back of the list
-     * @param element Element to be added
-     * @return If successfully added
+     * Removes all of the elements from the list
      */
-    public boolean add(T element) {
-        if (element == null) {
-            throw new IllegalArgumentException();
+    public void clear() {
+        init();
+    }
+
+
+    /**
+     * Checks if the list contains the given object
+     *
+     * @param obj
+     *            the object to check for
+     * @return true if it contains the object
+     */
+    public boolean contains(T obj) {
+        return lastIndexOf(obj) != -1;
+    }
+
+
+    /**
+     * Gets the object at the given position
+     *
+     * @param index
+     *            where the object is located
+     * @return The object at the given position
+     * @throws IndexOutOfBoundsException
+     *             if there no node at the given index
+     */
+    public T get(int index) {
+        return getNodeAtIndex(index).getData();
+    }
+
+
+    /**
+     * Adds a element to the end of the list
+     *
+     * @param newEntry
+     *            the element to add to the end
+     */
+    public void add(T newEntry) {
+        add(size(), newEntry);
+    }
+
+
+    /**
+     * Adds the object to the position in the list
+     *
+     * @param index
+     *            where to add the object
+     * @param obj
+     *            the object to add
+     * @throws IndexOutOfBoundsException
+     *             if index is less than zero or greater than size
+     * @throws IllegalArgumentException
+     *             if obj is null
+     */
+    public void add(int index, T obj) {
+        if (index < 0 || size < index) {
+            throw new IndexOutOfBoundsException();
         }
-        Node currentNode = head;
-        while (currentNode.next != null) {
-            currentNode = currentNode.next;
+        if (obj == null) {
+            throw new IllegalArgumentException("Cannot add null "
+                + "objects to a list");
         }
-        currentNode.next = new Node(element, null);
+
+        Node<T> nodeAfter;
+        if (index == size) {
+            nodeAfter = tail;
+        }
+        else {
+            nodeAfter = getNodeAtIndex(index);
+        }
+
+        Node<T> addition = new Node<T>(obj);
+        addition.setPrevious(nodeAfter.previous());
+        addition.setNext(nodeAfter);
+        nodeAfter.previous().setNext(addition);
+        nodeAfter.setPrevious(addition);
         size++;
-        return true;
+
     }
 
+
     /**
-     * Removes an element from the list
-     * @param element Element to remove
-     * @return If successfully removed
+     * gets the node at that index
+     * 
+     * @param index
+     * @return node at index
      */
-    public boolean remove(T element) {
-        if (element == null) {
-            throw new IllegalArgumentException();
+    private Node<T> getNodeAtIndex(int index) {
+        if (index < 0 || size() <= index) {
+            throw new IndexOutOfBoundsException("No element exists at "
+                + index);
         }
-        if (!contains(element)) {
-            return false;
+        Node<T> current = head.next(); // as we have a sentinel node
+        for (int i = 0; i < index; i++) {
+            current = current.next();
         }
-        Node currentNode = head;
-        while (!currentNode.next.equals(element)) {
-            currentNode = currentNode.next;
+        return current;
+    }
+
+
+    /**
+     * Gets the last time the given object is in the list
+     *
+     * @param obj
+     *            the object to look for
+     * @return the last position of it. -1 If it is not in the list
+     */
+    public int lastIndexOf(T obj) {
+        /*
+         * We should go from the end of the list as then we an stop once we find
+         * the first one
+         */
+        Node<T> current = tail.previous();
+        for (int i = size() - 1; i >= 0; i--) {
+            if (current.getData().equals(obj)) {
+                return i;
+            }
+            current = current.previous();
         }
-        currentNode.next = currentNode.next.next;
+        return -1; // if we do not find it
+    }
+
+
+    /**
+     * Removes the element at the specified index from the list
+     *
+     * @param index
+     *            where the object is located
+     * @throws IndexOutOfBoundsException
+     *             if there is not an element at the index
+     * @return true if successful
+     */
+    public boolean remove(int index) {
+        Node<T> nodeToBeRemoved = getNodeAtIndex(index);
+        nodeToBeRemoved.previous().setNext(nodeToBeRemoved.next());
+        nodeToBeRemoved.next().setPrevious(nodeToBeRemoved.previous());
         size--;
         return true;
     }
 
+
     /**
-     * Gets the index of an element
-     * @param element Element to find the index of
-     * @return Index if found, -1 if not found
+     * Removes the first object in the list that .equals(obj)
+     *
+     * @param obj
+     *            the object to remove
+     * @return true if the object was found and removed
      */
-    public int indexOf(T element) {
-        Node currentNode = head;
-        int count = 0;
-        while (currentNode.next != null) {
-            if (currentNode.equals(element)) {
-                return count;
+
+    public boolean remove(T obj) {
+        Node<T> current = head.next();
+        while (!current.equals(tail)) {
+            if (current.getData().equals(obj)) {
+                current.previous().setNext(current.next());
+                current.next().setPrevious(current.previous());
+                size--;
+                return true;
             }
-            currentNode = currentNode.next;
-            count++;
+            current = current.next();
         }
-        return -1;
-    }
-    
-    @Override
-    public boolean hasNext() {
         return false;
     }
-    
-    @Override
-    public T next() {
-        return null;
-    }
-    
+
+
     /**
-     * Class for nodes in the list
-     * @author Group 116
-     * @version 2023.4.13
+     * Returns a string representation of the list If a list contains A, B, and
+     * C, the following should be returned "{A, B, C}" (Without the quotations)
+     *
+     * @return a string representing the list
      */
-    private class Node {
-        private T data;
-        private Node next;
-        
-        /**
-         * Constructs a new Node object
-         * @param data Generic data type
-         * @param next Pointer to next object in the list
-         */
-        public Node(T data, Node next) {
-            this.data = data;
-            this.next = next;
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder("{");
+        if (!isEmpty()) {
+            Node<T> currNode = head.next();
+            while (currNode != tail) {
+                T element = currNode.getData();
+                builder.append(element.toString());
+                if (currNode.next != tail) {
+                    builder.append(", ");
+                }
+                currNode = currNode.next();
+            }
         }
+
+        builder.append("}");
+        return builder.toString();
     }
 }
